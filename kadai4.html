@@ -7,6 +7,7 @@
     <body>
         <h1 id="vending-machine">自動販売機システム</h1>
         <table id="item_area" border="1"></table>
+        <p id="balance"></p>
         <script>
             // 商品一覧を記録する連想配列の配列
             const items =  [
@@ -37,19 +38,37 @@
 
                     // 配列の内容を項目毎に出力
                     // 課題4-1. ここにコードを書く
+                    for (let i=0; i<items.length; i++) {
+                        console.log("商品番号: " + items[i].id + ", 商品名: " + items[i].name + ", 金額: " + items[i].price + ", 在庫数: " + items[i].stock);
+                    }
+
                     console.log(""); // 空行の出力
                 }
                 
                 // 商品購入の関数
                 buyItem() {          
-                    if (this.stock >= 1) { 
+                    if (this.stock >= 1 && syozikin >= this.price) { 
                         console.log("商品番号: "+this.id+", 商品名: "+this.name+"を購入します。");
                         // 課題4-2. ここにコードを書く
                         // 購入による商品の在庫削減処理
+                        this.stock--;
+                        syozikin -= this.price;
                         
                         // 課題4-3. ここにコードを書く
                         // 在庫用のエレメントを抽出し、HTML内の個数を更新
-                    } else console.log(this.name+"は商品の在庫がないため購入できません。");
+                        console.log("残りは"+this.stock+"個です。");
+                        const row = document.getElementById("button"+this.id).parentNode.parentNode;
+                        const stockCell = row.getElementsByTagName("th")[2];
+                        stockCell.innerHTML = this.stock;
+
+                        const money = document.getElementById("balance");
+                        money.innerHTML += this.name + "を購入しました。残金は" + syozikin + "円です。";
+
+                    } else if (this.stock < 1) {
+                        console.log(this.name+"は商品の在庫がないため購入できません。");
+                    } else {
+                        console.log("所持金が不足しているため購入できません。");
+                    }
                 }
             } // End of Item class
 
@@ -63,17 +82,31 @@
 
             // 課題4-1. ここにコード書く
             // 商品オブジェクトの生成
+            for (let i=0; i<items.length; i++) {
+                item_list[i] = new Item(items[i].name,items[i].price,items[i].stock)
+                console.log("id: " + item_list[i].id + ", name: " + item_list[i].name + ", " + item_list[i].price + "円, 残り" + item_list[i].stock + "個");
+            }
+            Item.number = items.length;
 
             // 課題4-2. ここにコードを書く
             // 商品表の作成
+            const itemTable = document.getElementById("item_area");
+            for (let i=0; i<items.length; i++) {
+                itemTable.innerHTML += "<tr><th>" + items[i].name + "</th><th>" + items[i].price + "</th><th>" + items[i].stock + "</th><th><button id='button"+items[i].id+"' type='button'>購入</button></th></tr>";
+            }
+
+            let syozikin = 1000;
+            const balanceElement = document.getElementById("balance");
+            balanceElement.innerHTML = "現在の所持金: " + syozikin + "<br>";
 
             // クリックイベント時の購入処理の設定
             for (let i=0; i<item_list.length; i++) {
                 // 課題4-3. ここにコードを書く
                 // 課題4-1, 4-2のコードが完成したら、以下のコメントを外す
-                //document.getElementById("button"+item_list[i].id).onclick = () => {
-                //    item_list[i].buyItem();
-                //}
+                document.getElementById("button"+item_list[i].id).onclick = () => {
+                    balanceElement.innerHTML = "現在の所持金: " + syozikin + "<br>";
+                    item_list[i].buyItem();
+                }
             }
             Item.showItemList(item_list);
 
